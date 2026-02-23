@@ -3,21 +3,20 @@ public class Main {
         System.out.println("=== Export Demo ===");
 
         ExportRequest req = new ExportRequest("Weekly Report", SampleData.longBody());
-        Exporter pdf = new PdfExporter();
-        Exporter csv = new CsvExporter();
-        Exporter json = new JsonExporter();
 
-        System.out.println("PDF: " + safe(pdf, req));
-        System.out.println("CSV: " + safe(csv, req));
-        System.out.println("JSON: " + safe(json, req));
+        safe("PDF", new PdfExporter(), req);
+        safe("CSV", new CsvExporter(), req);
+        safe("JSON", new JsonExporter(), req);
     }
 
-    private static String safe(Exporter e, ExportRequest r) {
-
+    private static void safe(String type, Exporter e, ExportRequest r) {
         ExportResult result = e.export(r);
-        if (result.isError()) {
-            return "ERROR: " + result.error;
+        if(!result.isSuccess) {
+            System.out.println(type + ": ERROR: " + result.errorMessage);
         }
-        return "OK bytes=" + result.bytes.length;
+        else {
+            System.out.println(type + ": OK bytes=" + result.bytes.length);
+
+        }
     }
 }

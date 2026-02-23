@@ -1,3 +1,3 @@
-public interface Exporter {
-    ExportResult export(ExportRequest request);
+public abstract class Exporter {
+    public abstract ExportResult export(ExportRequest req);
 }
