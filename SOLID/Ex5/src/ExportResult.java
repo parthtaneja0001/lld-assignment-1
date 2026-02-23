@@ -16,6 +16,6 @@ public class ExportResult {
     }
 
     public static ExportResult failure(String message) {
-        return new ExportResult(null, null, false, message);
+        return new ExportResult(null, new byte[0], false, message);
     }
 }
