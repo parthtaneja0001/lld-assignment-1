@@ -1,12 +1,26 @@
-public class EmailSender extends NotificationSender {
-    public EmailSender(AuditLog audit) { super(audit); }
+public class EmailSender implements NotificationSender {
+
+    private final AuditLog audit;
+
+    public EmailSender(AuditLog audit) {
+        this.audit = audit;
+    }
 
     @Override
     public void send(Notification n) {
-        // LSP smell: truncates silently, changing meaning
-        String body = n.body;
-        if (body.length() > 40) body = body.substring(0, 40);
-        System.out.println("EMAIL -> to=" + n.email + " subject=" + n.subject + " body=" + body);
+
+        if (n.body != null && n.body.length() > 40) {
+            System.out.println("EMAIL ERROR: body exceeds 40 characters");
+            audit.add("email failed");
+            return;
+        }
+
+        System.out.println(
+            "EMAIL -> to=" + n.email +
+            " subject=" + n.subject +
+            " body=" + n.body
+        );
+
         audit.add("email sent");
     }
 }

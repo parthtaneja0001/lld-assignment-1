@@ -5,7 +5,7 @@ public class HostelFeeCalculator {
 
     public HostelFeeCalculator(FakeBookingRepo repo) { this.repo = repo; }
 
-    // OCP violation: switch + add-on branching + printing + persistence.
+    // Fixed OCP violation: switch + add-on branching + printing + persistence.
     public void process(BookingRequest req) {
         Money monthly = calculateMonthly(req);
         Money deposit = new Money(5000.00);
@@ -17,21 +17,31 @@ public class HostelFeeCalculator {
     }
 
     private Money calculateMonthly(BookingRequest req) {
-        double base;
+
+        List<PricingComponent> components = new ArrayList<>();
+    
+        // Room component
         switch (req.roomType) {
-            case LegacyRoomTypes.SINGLE -> base = 14000.0;
-            case LegacyRoomTypes.DOUBLE -> base = 15000.0;
-            case LegacyRoomTypes.TRIPLE -> base = 12000.0;
-            default -> base = 16000.0;
+            case LegacyRoomTypes.SINGLE -> components.add(new SingleRoom());
+            case LegacyRoomTypes.DOUBLE -> components.add(new DoubleRoom());
+            case LegacyRoomTypes.TRIPLE -> components.add(new TripleRoom());
+            default -> components.add(() -> new Money(16000.0));
         }
-
-        double add = 0.0;
+    
+        // Add-on components
         for (AddOn a : req.addOns) {
-            if (a == AddOn.MESS) add += 1000.0;
-            else if (a == AddOn.LAUNDRY) add += 500.0;
-            else if (a == AddOn.GYM) add += 300.0;
+            switch (a) {
+                case MESS -> components.add(new MessAddOn());
+                case LAUNDRY -> components.add(new LaundryAddOn());
+                case GYM -> components.add(new GymAddOn());
+            }
         }
-
-        return new Money(base + add);
+    
+        Money total = new Money(0.0);
+        for (PricingComponent c : components) {
+            total = total.plus(c.monthly());
+        }
+    
+        return total;
     }
 }
